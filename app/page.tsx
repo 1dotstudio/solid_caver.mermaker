@@ -21,9 +21,6 @@ async function generateLinocut(imageUrl: string, onProgress: () => void): Promis
         strength: 0.88,
         num_inference_steps: 28,
         guidance_scale: 3.5,
-        image_size: { width: 1080, height: 1920 },
-        num_images: 1,
-        enable_safety_checker: false,
       }),
     }
   )
