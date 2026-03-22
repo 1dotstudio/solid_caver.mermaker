@@ -6,22 +6,22 @@ export async function POST(req: NextRequest) {
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
   const buffer = await file.arrayBuffer()
-  const bytes = new Uint8Array(buffer)
 
-  const uploadRes = await fetch('https://storage.fal.ai/files', {
+  const uploadRes = await fetch('https://fal.ai/api/upload', {
     method: 'POST',
     headers: {
       'Authorization': `Key ${process.env.FAL_KEY}`,
       'Content-Type': file.type || 'image/jpeg',
+      'X-Fal-Target-Url': 'fal-cdn-wasabi',
     },
-    body: bytes,
+    body: buffer,
   })
 
   if (!uploadRes.ok) {
     const text = await uploadRes.text()
-    return NextResponse.json({ error: 'FAL upload failed: ' + text }, { status: 500 })
+    return NextResponse.json({ error: text }, { status: 500 })
   }
 
   const data = await uploadRes.json()
-  return NextResponse.json({ url: data.url || data.file_url })
+  return NextResponse.json({ url: data.url || data.file_url || data.cdn_url })
 }
