@@ -94,9 +94,7 @@ export default function CoverGenerator() {
     if (!photo) return
     setErrorMsg('')
     setProgress(5)
-
     try {
-      // Step 1: upload to fal storage
       setStatus('uploading')
       const blob = await fetch(photo).then(r => r.blob())
       const fd = new FormData()
@@ -105,22 +103,17 @@ export default function CoverGenerator() {
       if (!upRes.ok) throw new Error('Upload failed')
       const { url: imageUrl } = await upRes.json()
       setProgress(15)
-
-      // Step 2: generate
       setStatus('generating')
       const linocutUrl = await generateLinocut(imageUrl, () => {
         setProgress(p => Math.min(p + 3, 82))
       })
       setProgress(85)
-
-      // Step 3: compose
       setStatus('composing')
       if (canvasRef.current) {
         await renderCover(canvasRef.current, linocutUrl, h1, labelText)
       }
       setProgress(100)
       setStatus('done')
-
     } catch (err) {
       console.error(err)
       setErrorMsg(err instanceof Error ? err.message : String(err))
@@ -155,59 +148,37 @@ export default function CoverGenerator() {
         <div style={S.headerTitle}>Cover Generator</div>
         <div style={S.headerSub}>SOLID INSIGHTS</div>
       </header>
-
       <div style={S.wrap}>
-        <canvas
-          ref={canvasRef}
-          style={{ width: '100%', borderRadius: '14px', display: status === 'done' ? 'block' : 'none', marginBottom: '18px', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}
-        />
-
+        <canvas ref={canvasRef} style={{ width: '100%', borderRadius: '14px', display: status === 'done' ? 'block' : 'none', marginBottom: '18px', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }} />
         {status === 'done' && (
           <div style={{ display: 'flex', gap: '12px', marginBottom: '28px' }}>
-            <button onClick={download} style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg, #2b9dd4, #1a7daa)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>
-              הורד PNG
-            </button>
-            <button onClick={reset} style={{ padding: '14px 18px', background: '#0f1928', color: '#7fa8c4', border: '1.5px solid #1e3460', borderRadius: '10px', fontSize: '15px', cursor: 'pointer' }}>
-              חדש
-            </button>
+            <button onClick={download} style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg, #2b9dd4, #1a7daa)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>הורד PNG</button>
+            <button onClick={reset} style={{ padding: '14px 18px', background: '#0f1928', color: '#7fa8c4', border: '1.5px solid #1e3460', borderRadius: '10px', fontSize: '15px', cursor: 'pointer' }}>חדש</button>
           </div>
         )}
-
         {isLoading && (
           <div style={{ textAlign: 'center', padding: '48px 20px' }}>
             <div style={S.spinner} />
-            <p style={{ color: '#2b9dd4', fontWeight: 700, fontSize: '17px', marginBottom: '24px' }}>
-              {statusLabel[status]}
-            </p>
+            <p style={{ color: '#2b9dd4', fontWeight: 700, fontSize: '17px', marginBottom: '24px' }}>{statusLabel[status]}</p>
             <div style={{ background: '#0f1928', borderRadius: '100px', height: '5px', overflow: 'hidden' }}>
               <div style={{ height: '100%', background: 'linear-gradient(90deg, #09254d, #2b9dd4)', width: `${progress}%`, transition: 'width 0.6s ease', borderRadius: '100px' }} />
             </div>
           </div>
         )}
-
         {(status === 'idle' || status === 'error') && (
           <>
-            <div
-              style={S.uploadZone(!!photo)}
-              onDrop={onDrop}
-              onDragOver={e => e.preventDefault()}
-              onClick={() => fileRef.current?.click()}
-            >
+            <div style={S.uploadZone(!!photo)} onDrop={onDrop} onDragOver={e => e.preventDefault()} onClick={() => fileRef.current?.click()}>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} />
               {photo
                 ? <><div style={{ fontSize: '28px', marginBottom: '8px' }}>✅</div><p style={{ color: '#2b9dd4', fontWeight: 600 }}>{photoName}</p></>
                 : <><div style={{ fontSize: '36px', marginBottom: '10px' }}>📸</div><p style={{ color: '#7fa8c4' }}>גרור תמונה או לחץ להעלאה</p></>
               }
             </div>
-
             <label style={S.labelStyle}>כותרת ראשית</label>
             <input type="text" value={h1} onChange={e => setH1(e.target.value)} placeholder="التخطيط" dir="rtl" style={S.input} />
-
             <label style={S.labelStyle}>טקסט ריבון</label>
             <input type="text" value={labelText} onChange={e => setLabelText(e.target.value)} placeholder="كيف نجحت في اول بزنس؟" dir="rtl" style={{ ...S.input, fontSize: '17px' }} />
-
             {status === 'error' && <div style={S.error}>{errorMsg}</div>}
-
             <button onClick={generate} disabled={!photo} style={S.btn(!!photo)}>
               {status === 'error' ? 'נסה שוב' : 'צור קאבר'}
             </button>
