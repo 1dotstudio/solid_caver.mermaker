@@ -36,3 +36,4 @@ npm run dev
 
 משתמש ב-`fal-ai/flux/dev/image-to-image` לייצור הליינוקאט.
 זמן עיבוד: 30-60 שניות.
+ 
