@@ -7,12 +7,11 @@ export async function POST(req: NextRequest) {
 
   const buffer = await file.arrayBuffer()
 
-  const uploadRes = await fetch('https://fal.ai/api/upload', {
+  const uploadRes = await fetch('https://storage.fal.ai/upload', {
     method: 'POST',
     headers: {
       'Authorization': `Key ${process.env.FAL_KEY}`,
       'Content-Type': file.type || 'image/jpeg',
-      'X-Fal-Target-Url': 'fal-cdn-wasabi',
     },
     body: buffer,
   })
@@ -23,5 +22,5 @@ export async function POST(req: NextRequest) {
   }
 
   const data = await uploadRes.json()
-  return NextResponse.json({ url: data.url || data.file_url || data.cdn_url })
+  return NextResponse.json({ url: data.url || data.access_url })
 }
